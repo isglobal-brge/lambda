@@ -1,0 +1,1139 @@
+%% LyX 2.2.1 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass{article}
+\usepackage[sc]{mathpazo}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{longtable}
+\usepackage[unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=2,
+ breaklinks=false,pdfborder={0 0 1},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{
+ pdfstartview={XYZ null null 1}}
+\usepackage{breakurl}
+\begin{document}
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+# set global chunk options
+opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+options(formatR.arrow=TRUE,width=90)
+@
+
+\title{Assessing agreement between experiments to distinguish conditions: Reproducibility of discriminating gene networks across brain tissues in GTEX}
+
+\author{A Caceres and JR Gonzalez}
+
+\maketitle
+\section*{Abstract}
+Reproducibility is a fundamental tenet of science yet perceived feeble in current biomedical research. Great effort is put into assessing the concordance between two experiments measured on the same set of individuals under controlled conditions, such as time points, exposures or tissues. However, many studies are designed to measure a population sample under a range of different conditions and, like any scientific study, their results are expected to be reproducible in other samples under different experimental setups. Surprisingly, there is a lack of statistical measures that assess the degree of agreement between independent studies to distinguish conditions. Take for instance the GTEX project, where gene expression data is measured in several tissues using RNA-seq, and validated with expression microarrays on the same individuals. In this study, one can infer the correlation gene network, a fundamental biological entity, for each tissue. It is therefore expected a level of reproducibility to discriminate gene networks between tissues, as derived in other studies of different individuals and experimental procedures. We propose an agreement measure of condition discrimination that generalizes Cohen's kappa, in which the elements of a cross-tabulated table between conditions are pair-wise correlations between two different studies. We derive the distributional characteristics of the measure, and show how it increases monotonically with kappa while its variance allows high precision estimates of intermediate agreement. We use the measure to test the agreement to distinguish between the gene networks of four brain regions as inferred from the GTEX (RNA-seq) and BRAINEAC (microarray) projects. We find full agreement to distinguish between gene networks across tissues and fair agreement for their gene ontology enrichment status. As a conclusion, GTEX unprecedented expression data should be currently used as a benchmark to reproduce tissue specificity of gene networks obtained in independent studies.
+
+
+\section{Introduction}
+
+
+Reproducibility is a pressing issue in biomedical research that particularly worries a large number of researchers in the field \cite{baker20161}. Research guidelines from leading journals and the American Statistician Association urge for the need of confirmation studies and accurate statistical reporting \\ (www.nih.gov/about/reporting-preclinical-research.htm)\cite{wasserstein2016asa, mogil2017no}. In systems biology, interaction networks are often derived from the integration of high-throughput data. A number of metrics exist to test the preservation of the networks under different conditions \cite{langfelder2011my}. If the conditions are different experiments then the measures can be used to assess the reproducibility of the network. However, as in many experiments that aim to test a set of individuals under varying conditions, there is interest to test, for instance, how the interactions of a gene network change between tissues. Clearly, the validity of such experiments also need to be assessed. In these cases, preservation metrics are measurements within experiments to distinguish between conditions while reliability should assess the degree of agreement between experiments to distinguish conditions.    
+
+In statistics, there are numerous ways to measure the reliability of an observation. Reliable observations are reproducible and accurate. Agreement measures between two experiments on the same individuals are used to assess the consistency of the observations being made. If observations are classifications of individuals into groups, Coehn's $\kappa$ and its generalizations are typically used \cite{cohen1960coefficient, banerjee1999beyond}; if observations are continuous then a number of correlation measures can be used, such as Pearson's or intra-class correlations \cite{shrout1979intraclass}. These and other similar agreement measures are suitable when experiments are performed under controlled conditions on the individuals. When experiments are designed to test the individuals under a range of varying controlled conditions, it is of interest to test first the ability of the observations to distinguish between conditions and second the consistency of such ability, when experimental procedures and individual samples change. Remarkably, for this type experiments, there is a lack of reliability measures that, in particular, can help us assess the reliability of co-expression gene networks to distinguish between a range of tissues. We therefore propose a generalization of Cohen's $\kappa$ that measures the agreement between experiments to distinguish  conditions.                     
+
+The GTEX project is an unprecedented effort to measure the gene expression in tens of tissues in hundreds of subjects \cite{mele2015human}. It is therefore a strong candidate for becoming a preferred benchmark for the interaction networks inferred in specific experiments. Currently, the validity of a gene or protein network derived from high throughput data is typically assessed by comparing it with networks derived from current knowledge of specific interactions, given by curated pathways, specific experiments, or even text mining of published articles, etc \cite{szklarczyk2014string}. This type of confirmatory analysis does not take into account, for instance, that some networks may arise in one tissue and not in another. Therefore, while validity is thus investigated, reproducibility is not being measured. Reproducible networks are observables of reproducible experiments, one of which could be taken as GTEX. Agreement measures with analyses derived from this project may then serve as confirmatory experiments for reliability assessments of interactions network \cite{mogil2017no}.
+
+Studies that measure gene expression in a range of tissues can become more common, one of which is the BRAINEAC project \cite{trabzuni2011quality}. Here, the gene expression using a microarray data was measured in hundreds on un-demented individuals at the time of death in nine different tissues. Using our agreement measure, we therefore investigated the reliability of discriminating gene networks across common brain tissues between BRAINEAC and in GTEX studies. We tested the reliability of genome-wide and KEGG networks (www.genome.jp/kegg).    
+  
+Given that an important part of reproducibility research is the detailed reporting of the analysis and results \cite{sandve2013ten}, all necessary data and the code needed to reproduce all the reported results of this work has been made publicly available in /github/.  
+
+\section{Methods} 
+
+We propose an agreement measure of experiments to distinguish between controlled conditions. While the measure can be applied on different research settings, we illustrate how its need arises from an example in current functional genomic research.    
+
+\subsection{The problem}
+Let us assume that we have two experiments that measure genome-wide gene expression in two different population samples, in the same range of tissues (conditions). The experimental conditions and setups may also vary, i.e. one experiment uses RNA-seq and the other microarray technologies. We are interested in inferring the co-expression gene networks across tissues and determine whether the networks are consistent between experiments, where co-expression between two genes is determined by their correlation over the subjects' gene expression levels. Table \ref{t1} shows the experimental design, where we assume thee genes (variables) measures under three tissues (conditions) in two different population samples.      
+
+
+\begin{table}[h]
+\centering
+Experiment 1 - E1
+
+\begin{tabular}{rllll|rllll|rlll}
+    &     & A   &     &  &     &     &  B  &     &  &     &     & C   &     \\ \hline \hline
+    & {\bf v1} & {\bf v2} & {\bf v3} &  &     & {\bf v1} & {\bf v2} & {\bf v3} &  &     & \,\,{\bf v1} & {\bf v2} & {\bf v3} \\ 
+{\bf i1}  & a11 & a12 & a13 &  & {\bf i1}  & b11 & b12 & b13 &  & {\bf i1}  & c11 & c12 & c13 \\
+{\bf i2}  & a21 & a22 & a22 &  & {\bf i2}  & b21 & b22 & b23 &  & {\bf i2}  & c21 & c22 & c23 \\
+.   &  .  &  .  &   . &  &  .  &  .  &  .  &  .  &  & .   &  .  &  .  & . \\
+{\bf im}  & am1 & am2 & am3 &  & {\bf im}  & bm1 & bm3 & bm2 &  & {\bf im}  & cm1 & cm2 & cm3 \\
+\end{tabular}
+
+\begin{tabular}{rr}
+&\\
+\end{tabular}
+
+Experiment 2 - E2
+
+\begin{tabular}{rllll|rllll|rlll}
+    &     & A   &     &  &     &     &  B  &     &  &     &     & C   &     \\ \hline \hline
+    & {\bf v1} & {\bf v2} & {\bf v3} &  &     & {\bf v1} & {\bf v2} & {\bf v3} &  &     & \,\,{\bf v1} & {\bf v2} & {\bf v3} \\ 
+{\bf i1}  & a'11 & a'12 & a'13 &  & {\bf i1}  & b'11 & b'12 & b'13 &  & {\bf i1}  & c'11 & c'12 & c'13 \\
+{\bf i2}  & a'21 & a'22 & a'22 &  & {\bf i2}  & b'21 & b'22 & b'23 &  & {\bf i2}  & c'21 & c'22 & c'23 \\
+.   &  .  &  .  &   . &  &  .  &  .  &  .  &  .  &  & .   &  .  &  .  & . \\
+{\bf it}  & a't1 & a't2 & a't3 &  & {\bf it}  & b't1 & b't3 & b't2 &  & {\bf in}  & c't1 & c't2 & c't3 \\
+\end{tabular}
+\caption{Two experimental measurements ($E1$, $E2$) of 3 variables ($(v1,v2,v3)$, $k=3$) under three conditions/states ($i= (A, B, C)$, $n=3$) on $m$ items/individuals}
+\label{t1}
+\end{table}
+
+The interaction network for each of the experiments and conditions can be represented by a correlation matrix between all gene-pairs. Given that the correlation matrix is symmetrical, the network is fully determined by the upper triangular terms of the matrix. Table \ref{t2} shows the network derived for a single condition (tissue A) in both experiments.   
+
+\newpage
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rllll|rlll}
+    &     & A   &     &  &     &     &  A'  &      \\ \hline \hline
+    & {\bf v1} & {\bf v2} & {\bf v3} &  &     & {\bf v1} & {\bf v2} & {\bf v3}\\ 
+{\bf v1}  & 1 & A1 & A2 &  & {\bf v1}  & 1 & A'1 & A'2 \\
+{\bf v2}  & A1 & 1 & A3 &  & {\bf v2}  & A'1 & 1 & A'3\\
+{\bf v3}  & A2 & A3 & 1 &  & {\bf v3}  & A'2 & A'3 & 1 \\
+\end{tabular}
+\begin{tabular}{rr}
+\,&\,\\
+\,&\,\\
+\end{tabular}
+\begin{tabular}{lll}
+YA     & E1    & E2   \\ \hline \hline
+{\bf Y1}  & A1 & A'1  \\
+{\bf Y2}  & A2 & A'2\\
+.  & . & . \\
+{\bf Yl}  & Al & A'l \\
+\end{tabular}
+\caption{Network for state $A$ inferred in Experiment 1 ($A$) and Experiment 2 ($A'$) from correlations between variables shown in matrix form (above) or observation list of $l$ items (correlation pairs between experiments), where $l=\frac{1}{2} (k^{2}-k)$.}
+\label{t2}
+\end{table}
+
+A measure of the module preservation of the network is  the correlation between the triangular terms of the network inferred in each experiment \cite{langfelder2011my}, other preservation measures are also possible. From table \ref{t2}, we therefore compute the correlation between inferred networks 
+\begin{eqnarray}
+c(A,A')=cor(E1(YA),E2(YA)).
+\end{eqnarray}
+To assess agreement of networks between experiments we then form the cross-tabulated table of networks between experiments:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l||ccc}
+       & {\bf A'}    & {\bf B'}  &  {\bf C'}  \\ \hline \hline
+{\bf A} & c(A,A') & c(A,B') & c(A,C')  \\
+{\bf B} & c(B,A') & c(B,B') & c(B,C')  \\
+{\bf C} & c(C,A') & c(C,B') & c(C,C')  \\
+\end{tabular}
+\caption{Cross-tabulation of Network correlations between experiments}
+\label{t3}
+\end{table}
+
+We would then like to have a measure of the agreement of the cross-tabulated Table \ref{t3}, whose elements are point estimates with given distributional properties.  
+
+\subsection{A solution}
+
+Cross tabulation for two judges observing $m$ items in $n$ categories takes a similar of Table \ref{t3}, see Table \ref{t4}.  
+\begin{table}[h]
+\centering
+\begin{tabular}{l||ccc}
+       & {\bf A}    & {\bf B}  &  {\bf C}  \\ \hline \hline
+{\bf A} & N(A,A) & N(A,B) & N(A,C)  \\
+{\bf B} & N(B,A) & N(B,B) & N(B,C)  \\
+{\bf C} & N(C,A) & N(C,B) & N(C,C),  \\
+\end{tabular}
+\caption{Cross-tabulation of measurement scores in categories $(A,B,C)$ on the same group of items between two judges/experiments}
+\label{t4}
+\end{table}
+where $N(X,Y)$ is the number of items measured in category $X$ and $Y$ by the first and second judge respectively. Agreement is typically measured by Cohen's kappa
+
+\begin{eqnarray}
+\kappa= \frac{\sum_{i=1}^{n}P(X_i,X_i) - \sum_{i=1}^{n}P_1(X_i)P_2(X_i)}{1- \sum_{i=1}^{n}P_1(X_i)P_2(X_i)}
+\end{eqnarray}
+where $P(X_i,X_i)=N(X_i,X_i)/n$ is the observed frequency of items that where measured in category $X_i$ by both judges and $P_j(X_i)$ is the frequency of items in $X_i$ observed by judge $j$ ($j=1,2$). $\kappa$ measures the the fraction of discordant observations expected by chance that are actually observed in agreement. The sum $P_0= \sum_i P(X_i,X_i)$ is the total fraction of agreement, that falls in the diagonal, which does not account for random agreement.    
+
+
+From Table \ref{t3}, we propose to measure the probability that the diagonal items on the table are their row and column maxima:
+\begin{itemize}
+\item $p_{AA}=Pr(c(A,A')>c(A,B'), c(A,C'), c(B,A'), c(C,A'))$, 
+\item $p_{BB}=Pr(c(B,B')>c(B,A'), c(B,C'), c(A,B'), c(C,B'))$ and 
+\item $p_{CC}=Pr(c(C,C')>c(C,A'), c(C,B'), c(A,C'), c(B,C'))$,       
+\end{itemize}
+where $p_{ii}$ ($i=A,B,C$) is the probability that the correlation of network $i$ between experiment 1 and Experiment 2 is the maximum of the correlations between the network $i$ in one experiment and any other network in the other experiment. These probabilities can be computed as the product of the individual pair-wise probabilities
+
+\begin{eqnarray}
+p_{ii}=\prod_j Pr(c(i,i')>c(i,j')) * Pr(c(i,i')>c(j,i')),   
+\end{eqnarray}
+Where the first factor is the maximum over rows (Experiment 1), the second factor the maximum over columns (Experiment 2), and the product runs over all other possible conditions ($j$). If we assume that the correlations $c(a,b')$ can be transformed to normal random variables $z_{ab'}$ using, for example, a Fisher's z transformation, then the probability that the diagonal term $(i,i')$ is higher than other term $j'$ in the row can be computed from
+ 
+\begin{eqnarray}
+Pr(c(i,i')>c(i,j'))=\frac{1}{2} (1- erf( \frac{1}{\sqrt{2}}\frac{\mu_{ij} -\mu_{ii}}{\sqrt{\sigma_{ii}^2 +\sigma_{ij}^2}}), 
+\end{eqnarray}
+where $erf$ is the error function. The expression follows from assuming a transformation $T$ such that
+
+\begin{eqnarray}
+z_{ij'}=T(c(i,j')) \\
+z_{ij'} \sim N(\mu_{ij},\sigma^2_{ij}) 
+\end{eqnarray}
+and performing the integration over the joint distribution 
+
+\begin{eqnarray}
+Pr(c(i,i')>c(i,j'))= \int_{-\infty}^{\infty} \int_{z_{ij'}}^{\infty} N(\mu_{ii},\sigma_{ii}^2) N(\mu_{ij},\sigma_{ij}^2) dz_{ii'}dz_{ij'}. 
+\end{eqnarray}
+Therefore, we have that the probability that the diagonal term $c(i,i')$ is the maximum in the row $i$ is
+
+\begin{eqnarray}
+\prod_j Pr(c(i,i')>c(i,j')) = \frac{1}{2} \prod_j  (1- erf( \frac{1}{\sqrt{2}}\frac{\mu_{ij} -\mu_{ii}}{\sqrt{\sigma_{ii}^2 +\sigma_{ij}^2}}).  \label{pii} 
+\end{eqnarray}
+The the probability that the diagonal term $c(i,i')$ is the maximum in the column $i$ follows a similar form. 
+
+Our agreement measure then follows from the overall probability that the diagonal items on the cross-tabulated table are their row and column maxima. This is the probability of $n$ successes in $n$ Bernoulli trials each of which has its own probability $p_{ii}$, or a bionomial Poisson distribution with mean and variance
+
+\begin{eqnarray}
+\mu = \sum_{i} p_{ii}\\
+\sigma^2 = \sum_{i} p_{ii}(1-p_{ii}) \label{lambda}
+\end{eqnarray}
+We define the fraction of successes $\lambda=\mu/n$ with corresponding variance $\sigma_\lambda^2=\sigma^2/n^2$ as the agreement measure of experiments to distinguish between conditions. In the case that Experiment 1 (in rows) is the benchmark for Experiment 2 (in columns), then one is interested in testing whether the diagonal terms are the maxima of their rows only, generalizing the concepts of sensitivity and specificity for more than two conditions. In this case  $\lambda$ can be computed by simply setting $Pr(c(i,i')>c(j,i')=1$. 
+
+
+\subsection{Comparison between measures of agreement}
+We compared the performance of the state agreement's $\lambda$ with $\kappa$ under different scenarios. We first noted that cross-tabulation in Table \ref{t4} for $\kappa$ measurements can be casted into the cross-tabulated table of inferences as Table \ref{t3}. Given that for row $i$ the number of observed items is $N_i=P_1(X_i) n$, we can then assume that $N(X_i,X_j)$ is one draw of a binomial variable 
+
+\begin{eqnarray}
+N(X_i,X_j)\sim Binomial(N(X_i,X_j),N(X_i,X_j)/N_i)
+\end{eqnarray}
+with mean, and variance of the mean,
+
+\begin{eqnarray}
+\mu_{ij}&=&N(X_i,X_j) \\
+\sigma_{ij}^2&=&N(X_i,X_j) (1-N(X_i,X_j)/N_i),
+\end{eqnarray}
+which distributes normally for large $N_i$. These values can be used in equation \ref{pii}. With a similar computation for the column elements, the measure $\lambda$ can be obtained for a table in the form of Table \ref{t4}. The state agreement $\lambda$ can thus be compared  with the value of $\kappa$ for varying values of the total fraction of agreement $P_0$. We also compared the measure with the fraction of times a diagonal element is a row and column maximum $r$, obtained from: 
+\begin{eqnarray}
+    R_{i}&=& 
+\begin{cases}
+    1, & \text{if }  N(X_i,X_i)=max(\left\{N(X_i,X_j), N(X_j,X_i)\right\}_j)\\
+    0,              & \text{otherwise}
+\end{cases} \\
+    r&=&\frac{1}{n} \sum_i R_{i}. 
+\end{eqnarray}
+
+ 
+We performed a series of simulations to compare these four measurements. We selected six different scenarios given by three possible number of states/categories $n=(5,10,15)$, and three possible initial forms for the marginal frequencies $P1(X_j)$ and $P2(X_j)$
+
+\begin{itemize}
+\item Senario 1 (equiprobable): $P1(X_j)=P2(X_j)=\frac{1}{n}$ 
+\item Senario 2: $P1(X_j)=P2(X_j)=\frac{1}{j} \sum_j \frac{1}{j} $
+\item Senario 3 (least equiprobable): $P1(X_j)=P2(X_j)=\frac{1}{j^2} \sum_j \frac{1}{j^2} $
+\end{itemize}
+
+We set the number of observations to $m=500$. For each scenario, we simulated 50 cases of perfect agreement tables, i.e. diagonal matrices, and 50 cases of perfect disagreement; those are tables with zeros on the diagonal terms except for the cell of maximum joint probability. For each case, we permuted 20 pairs of observations 100 times. After each 20 pairs of permutations, we computed the four agreement measures. This procedure allowed assessment of 5,000 simulations with decreasing agreement from 1 to 0 and 5,000 simulations with increasing agreement from 0 to 1, covering the whole agreement interval.     
+
+We used {\tt R.3.30} and the package {\tt psych} to perform calculations and compute the Cohen's $\kappa$. 
+
+
+\subsection{Gene expression data}
+
+We downloaded expression data from the GTEX project obtained from RNA-seq (http://www.gtexportal.org). Reads per kilobase per million mapped reads (RPKM) of version 6 were obtained for all brain tissues ({\tt GTEx$\_$Analysis$\_$v6$\_$RNA-seq$\_$RNA-SeQCv1.1.8$\_$gene$\_$rpkm.gct.gz}). Covariates for each tissue were also downloaded ({\tt GTEx$\_$Analysis$\_$V6$\_$eQTLInputFiles$\_$covariates.tar.gz}). 
+
+We also downloaded the brain expression data of the BRAINEAC project  (http://www.braineac.org/) obtained from winsorized values of exon array data (Affymetrix Human Exon 1.0 ST array). Downloaded data has been previously normalized and corrected for batch effects. 
+
+We identified four brain tissues common in both datasets and for which GTEX had covariate information. Those were cerebellum (CRBL) with 125 individuals in GTEX and 130 in BRAINEAC, frontal cortex (FCTX) with 108 and 135 individuals, (HIPP) hippocampus with 94 and 130 individuals, and putamen (PUTM) with 82 and 135 individuals, respectively. Between the two studies, we mapped 10,683 genes for wich we computed the all the pair-wise correlations between the expression values. We used a partial correlation for the GTEX data, in which we adjusted for the covariates, and a Pearson's correlation for the gene co-expressions in BRAINEAC. Scripts with co-expression analysis code and the required data can be found in .
+
+\section{Results}
+
+\subsection{Simulations}
+We observed that the condition agreement measure $\lambda$ increased monotonically with $\kappa$ for all the simulation scenarios, see figure \ref{fig:mean1}. The functional dependence was highly stable under different scenarios, revealing, as expected, high $\lambda$ agreement for fair values between $(0.2,0.4)$ of $\kappa$, as the latter is a measure of exact agreement rather than discriminative agreement. For low values, $\lambda$ tends to zero when $\kappa$ can take small negative values, a situation already described in Cohen's. We also observed that for a given $\kappa$ there is a sizable range of $\lambda$ values, in particular as conditions become less equiprobable (changes of scenarios from 1 to 3). Note that, when the number of conditions is small (5) and the marginal distribution greatly concentrates around a single condition ($j=5$ for scenario 3) then $\lambda$ tends to $1/\#conditions$ (0.2), as the experiments can clearly distinguish this condition from the rest. In this case, $\kappa$ tends to zero.       
+
+In terms of $\lambda$'s variance (figure \ref{fig:variance1}), we found that it decreases with the number of states, and departure from marginal equiprobability. For a given $\lambda$, we observed that a range of variances are allowed; whereas $\kappa$ has a one to one correspondence between mean and variance (not shown). In particular, $\lambda$'s variance seem to decrease towards zero when the mean of $\lambda$ tends to $r$, that is, when the probabilities of diagonal terms of being row maxima tend either to zero or to one. From a practical point of view, this means that if the elements of the cross-tabulated table of inferences (Table \ref{t3}) are determined each with high precision (low variance) then the agreement measure can also be estimated with high precision, as well. The effect is clearly visible in the scenarios 2 and 3 and low number of conditions. As the number of conditions increase, the effect should be visible with a substantial increase on the number of simulations. When concentration around a single condition is present, we observed a clear reduction of the possible values for the variance, around $\lambda = 1/\#conditions$.         
+
+The comparisons between three agreement measures ($\kappa$, $\lambda$ and $r$) are shown in figure \ref{fig:Comp} for changing number of conditions for the equiprobable scenario 1, as a function of the accuracy value $P_0$. We confirmed the lower estimate of $\kappa$ with respect to $P_0$ and observed that the difference decreases as the number of states increases. This is as expected since agreement test with lower number of categories are more prone to correct classification due to chance. Similarly $r$, the fraction of times the diagonal terms are row and column maxima, is higher than $\lambda$, a distributional estimate of such fraction. 
+
+\subsection{Real data}
+\subsection{Genome-wide networks}
+We inferred the genome-wide co-expression networks between for 10,683 genes across the GTEX and BRAINEAC studies in four brain tissues: cerebellum, frontal cortex, hippocampus and putamen. Each networks was fully characterized by $5.7 \times 10^7$ interactions which correspond to the upper triangular matrix terms of the correlation matrix of expression levels. We assessed the agreement between studies to distinguish the genome-wide networks across all four tissues. Figure \ref{fig:TissueCorrelations} illustrates the correlations between the networks, whose values where previously z-transformed. We observed that the all correlations were similar in size between (0.37, 0.46). However, their standard errors where small ($\sim 10^{-5}$), given the large number of degrees of freedom. More specifically, the figure shows that the cerebellum and frontal cortex diagonals are the maxima of their rows and columns, and therefore the two studies can discriminate between them. For the hippocampus and putamen, note that they are the second maxima after the correlation of GTEX functional cortex with each of these tissues in BRAINEAC. The experiments then cannon clearly agree on how distinguishable is the frontal cortex from the hippocampus and putamen.           
+
+We computed the agreement measure $\lambda$ from Tables \ref{means} and \ref{Sigmas}, which are the normally distributed variables, inferred from the between network correlations. As expected form the observations made in figure \ref{fig:TissueCorrelations}, we obtained  a value of $\lambda=0.5$ and vanishing variance. This value of $\lambda$ reports that a fraction of $1/2$ conditions are agreed to be different between experiments. The high precision of the estimate follows from the small standard errors of the correlations, due to the large number of degrees of freedom. 
+
+We also benchmarked BRAINEAC networks with respect to GTEX. We hence looked only at the diagonal terms within their rows. In this case, we confirmed that all diagonal terms were their row maxima (see table \ref{RankGTEX}), and therefore $\lambda=1$. These result show that, leaving other confirmatory studies to assess GTEX as a possible benchmark, BRAINEAC fully agrees with GTEX in terms of sensitivity and specificity.           
+
+\subsection{KEGG networks}
+The Kyoto encyclopedia of genes and genomes (KEGG) offers a list of experimentally characterized biochemichal pathways. We selected the annotated genes in each study, for the proteins of 292 pathways. For each of these pathways, or subset of genes, we computed the full agreement meassure $\lambda$ and its benchmark version, similarly to the previous section.  
+
+The full agreement $\lambda$ is shown in table \ref{KEGG} for pathways with the top values ($\lambda>0.5$). We observe 8 pathways ($2\%$) with agreement between (0.5, 0.75), those are pathways for which there is agreement to be distinguishable in between two and three tissues. No pathways is likely to be different in all four tissues across studies. Interestingly, 5 of these pathways are directly linked with signaling processes specific to brain. The top hit with $\lambda=0.68$ and $\sigma^2_\lambda=0.012$, {\it neuroactive ligand receptor interaction}, is illustrated in figure \ref{fig:neuroactivecorrelations}. The figure shows that the cerebellum is not clearly identified by BRAINEAC, as the diagonal term is the minimum in the row. However, a clear distinction is obtained for the frontal cortex, hippocampus and putamen areas with estimate for $\lambda$ lower than $r=0.75$ that accounts for sizable uncertainty in the estimates of the correlations.       
+
+We also banchmarked BRAINEAC with respect to GTEX for the KEGG pathways. We confirmed the higher estimated of $\lambda$ in this case, since lower comparisons for the diagonal terms are included, and therefore their probabilities of being row maxima increase. In particular, we observed that 5 pathways had agreement between (0.75, 1), meaning that BRAINEAC can agree to distinguish between 3 to 4 tissues in these pathways, if GTEX variability is not taken into account (Table \ref{KEGGBench}. Three of the four pathways are specific to brain and were previously obtained in the full agreement measure. In particular, {\it neuroactive ligand receptor interaction}, increased to $\lambda=0.805$. We interpret this result as a gained distinction between the frontal cortex, hippocampus and putamen, and an increment in the uncertainty that the diagonal term of the cerebellum is not the row maxima; respect to the full agreement measure.   
+
+
+\section{Discussion}
+
+We propose a new measure, $\lambda$, of agreement between studies. The motivation of the measure is the assessment of agreement between studies on items (subjects, co-expression pairs, etc) under a range of controlled conditions. In particular, we studied the agreement of studies to distinguish between the co-expression networks of four different brain tissues. We are unaware of similar measures of agreement, in particular for testing large interaction networks. Measures of module network preservation allow the assessment for the reliability of one network over different conditions, the correlation between co-expression networks being one of them \cite{langfelder2011my}. While other preservation measures can be used for network discrimination between conditions, here, we are interested in assessing the overall reproducibility of the discrimination in two different experiments. As the new measure is conceptually closer to inter-rater agreement measures, we designed a simulation framework in the properties of $\lambda$ could be compared with those of Cohen's $kappa$. $\lambda$ is a suitable reliability measure as it satisfies three basic requirements: i) its values range from 0, null agreement, to 1, perfect agreement, ii) tends to zero when expected agreement tends to zero and iii) it accounts for random agreement. As compared with $kappa$, $\lambda$ systematically leads to higher agreement. Perfect agreement for $\kappa$ is exclusively given by diagonal tables, while perfect agreement for $\lambda$ is given by maxima diagonal terms that are estimated with low variance. This is an important difference between the measures, which allow $\lambda$ to be utilized in more general situations where the elements of the cross-tabulated table are inferences, and not only the proportion of times two raters agree on a measurement of a set of items. In particular, we observe that $\lambda$ can be estimated with low variance for intermediate values of agreement, or intermediate fraction of conditions that are distinguishable between studies. Therefore, as $\lambda$ can be less conservative measure, it allows for a suitable generalization to studies that deal with numerous controlled conditions, that cannot be covered by $\kappa$.
+
+In our application to co-expression networks in brain, we found that GTEX and BRAINEAC agree on the discrimination of 2 tissues out of 4, at a genome-wide level. Note that the two studies are based on very different technologies (RNA-seq and microarray) and analysis methods to infer the networks in two different sets of subjects. Our results are unlike other studies, in which these two technologies have been applied  within the same study and subject sample to assess the level of agreement on gene expression measurements. While those studies measure the necessary reliability between technologies, our study assesses the reproducibility of between inferences from independent studies. As such, our method is of meta-analysis nature, where consistency between inferences are studied. 
+
+We made two further observations. If GTEX is considered as a benchmark study the agreement measures increase. In this case, we assume that GTEX validity as benchmark for gene-network inferences should be considered in other studies. Therefore the study's variability is not considered in the agreement assessment. We also observed that specific biochemical pathways can also be assessed for agreement. This focused approach lead to the identification of pathways specific to the biology of the brain. Our results suggest that agreement assessment can be thus put to the service of finding new biological effects.
+
+
+\bibliographystyle{unsrt} 
+\bibliography{references} 
+
+\section{Figures}
+
+<<start, cache=FALSE, echo=FALSE>>=
+library(psych)
+library(parallel)
+library(knitr)
+library(xtable)
+
+# global chunk options
+opts_chunk$set(cache=TRUE, autodep=TRUE)
+options(warn=-1)
+@
+
+
+<<stateAgreement, echo=FALSE>>=
+#function to compute condition agreement
+condition_agreement<-function(means, sigmas, benchmark = "FALSE")
+{
+ 
+  erf <- function(x) 2 * pnorm(x * sqrt(2)) - 1
+
+  probsdiagrow <- sapply(1:nrow(means), function(dd)
+  {
+
+    muddDiag <- means[dd,dd]
+    sigmaddDiag <- sigmas[dd,dd]
+
+    mudd <- means[dd,-dd]
+    sigmadd <- sigmas[dd,-dd]
+    prod((1-erf((-muddDiag + mudd + 1e-16)/sqrt(sigmaddDiag^2 + sigmadd^2 + 1e-16)/sqrt(2)))/2)
+
+  })
+
+
+  probsdiagcol <- sapply(1:nrow(means), function(dd)
+  {
+
+    muddDiag <- means[dd,dd]
+    sigmaddDiag <- sigmas[dd,dd]
+
+    mudd <- means[-dd,dd]
+    sigmadd <- sigmas[-dd,dd]
+    prod((1-erf((-muddDiag + mudd + 1e-16)/sqrt(sigmaddDiag^2 + sigmadd^2 + 1e-16)/sqrt(2)))/2)
+
+  })
+
+  probsdiag <- probsdiagrow*probsdiagcol
+  
+  if(benchmark == TRUE)
+    probsdiag <- probsdiagrow
+
+  #Remove bias at low agreement for the few state case
+  #probsdiag<-probsdiag[-which(probsdiag==max(probsdiag))[1]]  
+
+  estimate <- sum(probsdiag) / length(probsdiag)
+  variance <- sum(probsdiag * (1-probsdiag)) / (length(probsdiag)^2)
+  res <- list(estimate=estimate, variance=variance)
+  res  
+}  
+@
+
+<<simulations, echo=FALSE>>=
+##Simulations
+
+#number of conditions
+nnlev <- c(5, 7, 15)
+
+simulsNconditions <- lapply(nnlev, function(nlevels)
+{
+ 
+  #three scenarios
+  LL <- list(L1=rep(1,nlevels), L2=(1:nlevels), L3=(1:nlevels)^2)
+
+  simuls <- mclapply(LL, function(ll)
+  {
+
+    mt <- round(100*nlevels/sum(ll))
+    #store results in out
+    out <- c()
+
+    #start 100 times with perfect agreement
+    for(j in 1:100)
+    {
+      #print(j) 
+      #simulate perfect agreement
+      obs <- lapply(1:length(ll), function(x) 
+                cbind(rep(letters[x], ll[x]*mt), rep(letters[x], ll[x]*mt)))
+      obs <- do.call(rbind,obs)
+
+      #redefine observations for perfect disagreement in the last 50 initiations        
+      if(j>50)
+      {
+          tableobs <- table(obs[,1], obs[,2])
+          for(id in 1:(nrow(tableobs)-1))
+          {
+             D<-tableobs[id,id]
+             tableobs[id,id] <- tableobs[id,id] - D
+             tableobs[id,id+1] <- tableobs[id,id+1] + D
+
+             tableobs[id+1,id+1] <- tableobs[id+1,id+1] - D
+             tableobs[id+1,id] <- tableobs[id+1,id] + D
+          }
+
+          obscounts <- data.frame(tableobs) 
+          obscounts <- obscounts[obscounts$Freq!=0,]         
+          obs <-lapply(1:nrow(obscounts), function(rr) 
+                    do.call(rbind, 
+                       lapply(1:obscounts[rr,3], function (mm) 
+                         obscounts[rr,1:2]) ) )
+          obs<-do.call(rbind, obs)
+
+       }
+
+
+
+      #compute 100 agreement meassures each after permuting a 100 times (see nperm bellow)
+      for(i in 1:100)
+      {
+
+        #print(i)
+        tableobs <- table(obs[,1], obs[,2])
+
+        tableprops <- prop.table(tableobs)
+        kk <- ncol(tableprops)
+
+        #total observations
+        mtotal <- sum(tableobs)
+
+        #marginals
+        xmar <- rowSums(tableprops)
+        ymar <- rowSums(tableprops)
+
+
+        #cohen's kappa for one subject
+        ck <- cohen.kappa(obs)$kappa
+        varkappa <- cohen.kappa(obs)$var.kappa
+
+        #proportion of agreement
+        P0<-sum(diag(tableprops))
+
+
+        #rank per row and column
+        Rn <- sapply(1:kk, function(xx) 
+                   {
+                      rankrc<-rank(c(-tableprops[xx,xx], 
+                                     -tableprops[xx,-xx],
+                                     -tableprops[-xx,xx]),ties.method ="min" )
+                      #is the diagonal the first ranked in row and collumns?
+                      rankrc[1]==1
+
+                    }) 
+
+        #How many diagonal terms are their row and column maxima  
+        R <- sum(Rn) / kk
+
+
+        ##state agreement      
+
+        #observations for experiment 1
+        nsubsx <- xmar*mtotal
+     
+        mubinomial <- tableobs
+
+        sigmabinomial <- lapply(1:nrow(tableprops), function(dd)
+             { 
+               sigmaddsq <- sqrt(tableobs[dd,]*(1 - tableobs[dd,]/nsubsx[dd]))       
+              })
+
+        sigmabinomial <- as.matrix(do.call(rbind,sigmabinomial))
+
+        lambda <- condition_agreement(mubinomial, sigmabinomial)
+ 
+        res <- c(ck, P0, R, lambda$estimate, varkappa , lambda$variance)       
+
+        out <- rbind(out, res)
+
+       #do 30 permutations
+       nt<-30
+
+       for(nperm in 1:nt)
+        {  
+           sm <- sample(1:nrow(obs), 2)
+           smp1 <- sort(sm, dec=TRUE)
+           smp2 <- sort(sm, dec=FALSE)
+
+           obsper <- obs[smp1, 2]
+           obs[smp2, 2] <- obsper
+        }
+
+      }
+
+    }
+
+    out 
+
+  }, mc.cores=3)
+
+simuls
+
+})
+
+@
+
+
+<<mean1, out.width='1.0\\linewidth', echo=FALSE, fig.cap="Lambda compared with Cohen's kappa for values of acurracy P0, or total agreeement fraction, ranging from 0 to 1.">>=
+# plot simulation results
+labs<-c("scenario 1", "scenario 2", "scenario 3")
+par(mfrow = c(3,3))
+
+for(j in 1:3)
+{
+  for(i in 1:3)
+  {
+    plot(simulsNconditions[[j]][[i]][,1], simulsNconditions[[j]][[i]][,4], 
+         xlim = c(-0.12,1), ylim = c(0,1), col = "black", xlab = "Cohen's kappa", 
+         ylab = "Lambda agreement", pch = "o", 
+         main = paste0(as.character(nnlev[j])," conditions, ",labs[i]) )
+  }
+}
+@
+
+
+<<variance1, out.width='1.0\\linewidth', echo=FALSE, fig.cap= "Variance of lambda for nine different scenarios as a function of its mean. The figure illustrates how lambda can achieve precise estimates for intermediate agreements.">>=
+#plot simulation variances
+
+par(mfrow = c(3,3))
+
+for(j in 1:3)
+{
+  for(i in 1:3)
+  {
+     plot(simulsNconditions[[j]][[i]][,4], simulsNconditions[[j]][[i]][,6],
+          xlim=c(-0.12,1.12), ylim = c(0,0.07), col = "darkred", xlab = "Mean", 
+          ylab = "Variance", pch = "+", 
+          main = paste0(as.character(nnlev[j]), " conditions, ",labs[i]))
+
+
+  }
+}
+@
+
+
+
+<<Comp, out.width='1.0\\linewidth',echo=FALSE, fig.cap="The figure shows the comparison of four agreement measures: P0 (the total fraction of agreement), Cohen's kappa, lambda and r (the total fraction of times the diagonal elements are row and column maxima).">>=
+#plot comparison between methods
+
+labs<-c("5 conditions", "10 conditions", "20 conditions")
+par(mfrow = c(3,1))
+
+for(i in 1:3)
+{
+
+  plot(simulsNconditions[[i]][[1]][,2],simulsNconditions[[i]][[1]][,4], pch="+", col="darkred",
+       xlim = c(0.05,1), ylim = c(-0.05,1), xlab = "Proportion of Agreement (P0)", 
+       ylab = "Agreement measurements", main = labs[i])
+
+
+  points(simulsNconditions[[i]][[1]][,2], simulsNconditions[[i]][[1]][,1], pch = "-", col="darkred")
+
+#  lines(c(0,1),c(0,1))
+
+  points(simulsNconditions[[i]][[1]][,2], simulsNconditions[[i]][[1]][,2], pch="-")
+
+
+  points(simulsNconditions[[i]][[1]][,2], simulsNconditions[[i]][[1]][,3], pch="+")
+
+
+
+  legend("bottomright", c("P0","kappa","r", "lambda"), 
+         pch = c("-", "-", "+", "+"), col = c("black", "darkred", "black", "darkred"))
+}  
+@
+
+
+
+<<GTEXfiles, out.width='1.0\\linewidth',echo=FALSE>>=
+#get Data
+
+nms <- list.files(pattern = "RData", path  = "./data")
+nms <- sapply(strsplit(nms,"\\."), function(x) x[[1]])
+nms<-sapply(strsplit(nms, " - "), function(x) x[[length(x)]])
+nms<-sapply(strsplit(nms, "_"), function(x) x[[length(x)]])
+
+ls <- list.files(pattern = "RData", path  = "./data", full.names=TRUE)
+
+
+#pairs of same brain tissues in both studies
+pairs<-matrix(1:8, ncol = 2)
+
+rn <-nms[pairs[,1]]
+cn <-nms[pairs[,2]]
+
+cn1<-paste(cn,"GTEX",sep="-")
+cn2<-paste(cn,"BRAINEAC",sep="-")
+
+
+@
+
+
+<<TissueCorrelations, out.width='1.0\\linewidth',echo=FALSE, fig.cap="Correlation matrix between networks of four brain tissues across the GTEX and BRAINEAC studies (CRBL:cerebellum, FCTX:frontal cortex, HIPP: hippocampus, PUTM: putamen). The diagonal terms are shown in red. The agreement measure lambda assesses the mean fraction of times the diagonal terms are row and column maxima, given the distribution of the correlation estimates.">>=
+#plot Tissue correlations between experiments 
+
+op <- par(mfrow = c(4,4),
+          oma = c(5,4,0,0) + 0.1,
+          mar = c(0,3,3,2) + 0.1)
+
+
+for(kk in 1:nrow(pairs))
+{
+
+  ts1 <- pairs[kk,1]
+
+  #load GTEX
+  load(ls[ts1])
+  selout <- is.na(matcor[,3]) 
+  nms2 <- colnames(matcor)
+  matcorapp2 <- matcor
+
+
+  for(ll in 1:nrow(pairs))
+  {
+
+    #load BRAINEAC
+    ts2 <- pairs[ll,2] 
+
+    load(ls[ts2])
+    selout <- is.na(matcor[,3])
+    nms1 <- colnames(matcor)
+    matcorapp1 <- matcor
+
+
+    nmsgenes <- nms2[nms2%in%nms1 & ! duplicated(nms2)]
+
+    aa <- matcorapp2[nmsgenes,nmsgenes]
+    bb <- matcorapp1[nmsgenes,nmsgenes]
+     
+    triag <- upper.tri(aa, diag=FALSE)
+    corrall <- unlist(aa[triag])
+    sa1 <- corrall
+
+    triag <- upper.tri(bb,diag=FALSE)
+    corrall <- unlist(bb[triag])
+    sa2 <- corrall
+
+    logsa1 <- log((1 + sa1) / (1-sa1)) / 2
+    logsa2 <- log((1 + sa2) / (1 - sa2)) / 2
+
+    rho <- cor.test(logsa1, logsa2)
+    rho <- rho$estimate
+
+    sm<-sample(1:length(logsa2),10000)
+
+    col<-"black"    
+    if(kk==ll)
+      col<-"darkred"    
+
+    plot(logsa2[sm],logsa1[sm],xlab="",ylab="",axes=FALSE,xlim=c(-1,2),ylim=c(-1,2),pch=".",col=col)
+    axis(side = 1, at=(-1):(2),labels=rep("",4) )
+    axis(side = 2, at=(-1):(2),labels=rep("",4) )
+ 
+    if(ll==1)
+    { 
+      axis(side = 2, at=(-1):(2))
+       title(ylab=paste(c("\n \n",cn1[kk]),sep=""),line=3,cex.lab=1)
+    }
+  
+    
+    if(kk==1)
+    {
+      title(main=paste(cn2[ll], "\n cor: ", round(rho,5), sep=""), cex.main=1, font.main = 1)
+
+    }else{
+      title(main=paste("\n cor: ", round(rho,5), sep="" ), cex.main=1, font.main = 1)
+    } 
+
+    if(kk==4) 
+       axis(side = 1, at=(-1):(2))
+
+ 
+   }
+
+}
+
+par(op)
+
+@
+
+
+
+<<GWcor, echo=FALSE>>=
+#get correlations between tissue network across studies
+
+corBRAINEACGTEX <- lapply(pairs[,2], function(ts1)
+{
+  #load BRAINEAC
+  load(ls[ts1])
+  nms2 <- colnames(matcor) 
+  matcorapp2 <- matcor
+
+  #all brain in GTEXtissues
+  corrallGTEX <- mclapply(pairs[,1], function(ts2)
+  {
+
+    #load GTEX
+    load(ls[ts2])
+    nms1 <- colnames(matcor)
+    matcorapp1 <- matcor
+
+    nmsgenes <- nms2[nms2%in%nms1 & ! duplicated(nms2)]
+
+    aa <- matcorapp2[nmsgenes, nmsgenes]
+    bb <- matcorapp1[nmsgenes, nmsgenes]
+  
+    triag <- upper.tri(aa, diag=FALSE)
+    corrall <- unlist(aa[triag])
+    sa1 <- corrall
+
+    triag <- upper.tri(bb,diag=FALSE)
+    corrall <- unlist(bb[triag])
+    sa2 <- corrall
+
+    logsa1 <- log((1 + sa1) / (1 - sa1)) / 2
+    logsa2 <- log((1 + sa2) / (1 - sa2)) / 2
+
+    rho <- cor.test(logsa1, logsa2)
+    rho <- rho$estimate
+
+    #Fisher'r transform expected value and variance
+    z <- log((1 + rho) / (1 - rho)) / 2
+    sigmaz <-  1/sqrt(length(logsa2) -3)
+    c(z,sigmaz)
+
+  },mc.cores=5)
+
+  cor <- do.call(rbind,corrallGTEX)
+  #rownames(cor) <- cn1
+  cor
+})
+
+names(corBRAINEACGTEX) <- cn2
+
+@
+
+<<GTEXlambda, echo=FALSE>>=
+#get tables for means of z-transformed correlations and their sigmas, and the ranking for benchmarking
+ 
+
+means4agreement <- lapply(corBRAINEACGTEX, function(x) x[,1])
+means4agreement <- do.call(cbind, means4agreement)
+
+sigmas4agreement <- lapply(corBRAINEACGTEX, function(x) x[,2])
+sigmas4agreement <- do.call(cbind, sigmas4agreement)
+
+pt <- means4agreement
+kk<-nrow(means4agreement)
+
+
+######Means
+lambda1 <- condition_agreement(means4agreement, sigmas4agreement)
+
+tb <- data.frame(round(means4agreement,4))
+rownames(tb)<-cn1
+colnames(tb)<-cn2
+
+x <- xtable(tb, 
+            label="means", 
+            caption=paste(c("Z-transformed correlations between GTEX (rows) and BRAINEAC (columns) gene networks in four brain regions. The agreement of the table is lambda=", as.character(lambda1$estimate), " with vanishing variance due to the large amount of gene pairs involved in the correlations (tens of millions)."), collapse="") 
+            )
+
+
+print(x,file="./tables/means.tex", floating=FALSE,  
+     include.rownames = TRUE, tabular.environment="longtable", caption.placement="bottom")
+
+#####Sigmas
+tb <- data.frame(sigmas4agreement)
+rownames(tb)<-cn1
+colnames(tb)<-cn2
+
+x <- xtable(tb, 
+            label="Sigmas", 
+            caption=c("Standard errors of z-transformed correlations between GTEX (rows) and BRAINEAC (columns) gene networks in four brain regions."), 
+            display=c("s", "g", "g", "g", "g" ), digits=c(0, 3, 3, 3, 3))
+
+print(x,file="./tables/variances.tex", floating=FALSE,  
+     include.rownames = TRUE, tabular.environment="longtable", caption.placement="bottom", math.style.exponents=TRUE)
+
+
+
+#######Rank by row
+lambda2 <- condition_agreement(means4agreement, sigmas4agreement, benchmark = TRUE)
+
+ranktissue <- do.call(rbind,lapply(1:kk, function(xx) rank(pt[xx,],ties.method ="min" )))
+rownames(ranktissue) <- rownames(means4agreement)
+
+R <- (sum(diag(ranktissue)==kk)) / kk
+
+tb <- data.frame(ranktissue)
+rownames(tb)<-cn1
+colnames(tb)<-cn2
+
+
+x <- xtable(tb, auto = TRUE,
+            label = "RankGTEX",
+            caption = paste(c("Ranking of network correlations for BRAINEAC (columns) at a given GTEX (rows). The benchmarking of BRAINEAC with respect to GTEX is lambda = ", as.character(lambda2$estimate)), collapse="")) 
+
+print(x,file="./tables/RankGTEX.tex", floating=FALSE,  
+     include.rownames = TRUE, tabular.environment="longtable", caption.placement="bottom")
+
+@
+
+
+
+<<getKeggcorrelations, out.width='1.0\\linewidth',echo=FALSE>>=
+#get keggnames
+KEGG<-scan("./data/KEGG.txt",what="character")
+
+#get descriptions in variable kl
+load("./data/keggids.RData")
+
+spth<-grep("path",KEGG)
+spth<-spth[seq(1,length(spth),2)]
+
+spthPlusEnd<-c(spth-1,length(KEGG))
+
+KEGGlist<-lapply(1:length(spth), function(xx)
+ {
+   #print(xx)
+   KEGG[(spth[xx]+2):(spthPlusEnd[xx+1])]
+ }
+)
+names(KEGGlist)<-KEGG[spth]
+
+##get correlations in KEGG pathways
+
+
+braineacTissues <- list()
+
+for(kk in 1:nrow(pairs))
+{
+
+  ts1 <- pairs[kk,2]
+ 
+  #load BRAINEAC
+  load(ls[ts1])
+  selout <- is.na(matcor[,3]) 
+  nms2 <- colnames(matcor)
+  matcorapp2 <- matcor
+
+  gtexTissues<-list()
+
+
+  for(ll in 1:nrow(pairs))
+  {
+
+    ts2 <- pairs[ll,1] 
+
+    #load GTEX
+    load(ls[ts2])
+    selout <- is.na(matcor[,3])
+    nms1 <- colnames(matcor)
+    matcorapp1 <- matcor
+
+    nmsgenes <- nms2[nms2%in%nms1 & ! duplicated(nms2)]
+
+    getcor <- function(xx)
+    { 
+        genesKEGG <- KEGGlist[[xx]]  
+        selKEGGnmsgenes <- nmsgenes[nmsgenes%in%genesKEGG]
+     
+        aa <- matcorapp2[selKEGGnmsgenes,selKEGGnmsgenes]
+        bb <- matcorapp1[selKEGGnmsgenes,selKEGGnmsgenes]
+
+        triag <- upper.tri(aa, diag=FALSE)
+        corrall <- unlist(aa[triag])
+        sa1 <- corrall
+
+        triag <- upper.tri(bb,diag=FALSE)
+        corrall <- unlist(bb[triag])
+        sa2 <- corrall
+
+        logsa1 <- log((1 + sa1) / (1 - sa1)) / 2
+        logsa2 <- log((1 + sa2) / (1 - sa2)) / 2
+
+        rho <- cor.test(logsa1, logsa2)
+        rho <- rho$estimate
+
+        z <- log((1 + rho) / (1 - rho)) / 2
+        sigmaz <-  1/sqrt(length(logsa2) -3)
+
+        c(z, sigmaz)
+     }
+
+ 
+     corrkegg <- mclapply(1:length(KEGGlist), function(pp)
+     {
+      #  print(pp)
+        out<-try(getcor(pp)) 
+
+        if(class(out) == "try-error") 
+           out<-c(NA,NA) 
+       out
+      }, mc.cores=5)
+
+     corrkegg<-do.call(rbind,corrkegg)
+
+     gtexTissues[[ll]]<-corrkegg
+
+   }
+
+
+  names(gtexTissues) <- cn1
+  braineacTissues[[kk]] <- gtexTissues 
+}
+
+
+names(braineacTissues) <- cn2
+
+@
+
+
+
+<<getLambdasKeggcorrelations, out.width='1.0\\linewidth',echo=FALSE>>=
+# get lambdas for KEGG pathways
+
+LambdasKegg <- lapply(1:nrow(braineacTissues[[1]][[1]]), function(kk)
+{
+ 
+  meansMat <- lapply(1:nrow(pairs),function(breac)
+  { 
+    out <- sapply(1:nrow(pairs), function(gtex) braineacTissues[[breac]][[gtex]][kk,1])
+    names(out) <- names(braineacTissues[[1]])
+    out
+  })
+
+  meansMat <- do.call(rbind,meansMat)
+  rownames(meansMat) <- names(braineacTissues)
+
+  sigmasMat <- lapply(1:nrow(pairs),function(breac)
+  { 
+    out <- sapply(1:nrow(pairs), function(gtex) braineacTissues[[breac]][[gtex]][kk,2])
+    names(out) <- names(braineacTissues[[1]])
+    out
+  })
+
+  sigmasMat <- do.call(rbind,sigmasMat)
+  rownames(sigmasMat) <- names(braineacTissues)
+
+  out<-condition_agreement(meansMat,sigmasMat)
+  data.frame(lambda = round(out$estimate,3), variance = round(out$variance,3))
+
+})
+
+LambdasKegg <- do.call(rbind,LambdasKegg)
+
+rownames(LambdasKegg) <- KEGG[spth]
+
+KEGGnames <- kl[rownames(LambdasKegg)]
+
+KEGGnames <- sapply(strsplit(KEGGnames, "- Homo"), function (xx) xx[[1]])
+
+nmsKEGG <- sapply(strsplit(names(KEGGnames),":") , function(xx) xx[[2]])
+
+LambdasKegg <- data.frame(round(LambdasKegg,3), Description = KEGGnames, Ref = nmsKEGG)
+
+LambdasKegg <- LambdasKegg[!is.na(LambdasKegg[,1]),]
+
+oo <- order(-unlist(LambdasKegg[,1]))
+
+LambdasKegg <- LambdasKegg[oo,]
+
+
+tb<- LambdasKegg[LambdasKegg[,1] >= 0.5,]
+
+
+x <- xtable(tb, auto = TRUE,
+            label = "KEGG",
+            caption = "Agreement measure lambda between BRAINEAC and GTEX for distinguishability of KEGG pathways in more than 2 tissues out of 4 (lambda > 2/4 = 0.5)") 
+
+print(x,file="./tables/KEGG.tex", floating=FALSE,  
+     include.rownames = FALSE, tabular.environment="longtable", caption.placement="bottom")
+
+@
+
+
+
+
+<<getLambdasKeggcorrelationsBench, out.width='1.0\\linewidth',echo=FALSE>>=
+# get lambdas for KEGG pathways
+
+LambdasKeggbench <- lapply(1:nrow(braineacTissues[[1]][[1]]), function(kk)
+{
+ 
+  meansMat <- lapply(1:nrow(pairs),function(breac)
+  { 
+    out <- sapply(1:nrow(pairs), function(gtex) braineacTissues[[breac]][[gtex]][kk,1])
+    names(out) <- names(braineacTissues[[1]])
+    out
+  })
+
+  meansMat <- do.call(rbind,meansMat)
+  rownames(meansMat) <- names(braineacTissues)
+
+  sigmasMat <- lapply(1:nrow(pairs),function(breac)
+  { 
+    out <- sapply(1:nrow(pairs), function(gtex) braineacTissues[[breac]][[gtex]][kk,2])
+    names(out) <- names(braineacTissues[[1]])
+    out
+  })
+
+  sigmasMat <- do.call(rbind,sigmasMat)
+  rownames(sigmasMat) <- names(braineacTissues)
+
+  out<-condition_agreement(meansMat, sigmasMat, benchmark=TRUE)
+  data.frame(lambda = round(out$estimate,3), variance = round(out$variance,3))
+
+})
+
+LambdasKeggbench <- do.call(rbind,LambdasKeggbench)
+
+rownames(LambdasKeggbench) <- KEGG[spth]
+
+LambdasKeggbench <- data.frame(round(LambdasKeggbench,3), Description = KEGGnames, Ref = nmsKEGG)
+
+LambdasKeggbench <- LambdasKeggbench[!is.na(LambdasKeggbench[,1]),]
+
+oo <- order(-unlist(LambdasKeggbench[,1]))
+
+LambdasKeggbench <- LambdasKeggbench[oo,]
+
+
+tb<- LambdasKeggbench[LambdasKeggbench[,1] >= 0.75,]
+
+
+x <- xtable(tb, auto = TRUE,
+            label = "KEGGBench",
+            caption = "BRAINEAC benchmarked with respect to GTEX for distinguishability of KEGG pathways in more than 3 tissues out of 4 (lambda > 3/4 = 0.75)") 
+
+print(x,file="./tables/KEGGBench.tex", floating=FALSE,  
+     include.rownames = FALSE, tabular.environment="longtable", caption.placement="bottom")
+
+@
+
+
+<<neuroactivecorrelations, out.width='1.0\\linewidth',echo=FALSE,fig.cap="Correlation matrix between networks of four brain tissues across the GTEX and BRAINEAC studies (CRBL:cerebellum, FCTX:frontal cortex, HIPP: hippocampus, PUTM: putamen) for the neuroactive ligand-receptor interaction pathway. The diagonal terms are shown in red.">>=
+#get correlations between tissue neuroactive pathway across studies
+
+
+op <- par(mfrow = c(4,4),
+          oma = c(5,4,0,0) + 0.1,
+          mar = c(0,3,3,2) + 0.1)
+
+
+for(kk in 1:nrow(pairs))
+{
+
+  ts1 <- pairs[kk,1]
+
+  #load GTEX
+  load(ls[ts1])
+  selout <- is.na(matcor[,3]) 
+  nms2 <- colnames(matcor)
+  matcorapp2 <- matcor
+
+
+  for(ll in 1:nrow(pairs))
+  {
+
+    #load BRAINEAC
+    ts2 <- pairs[ll,2] 
+
+    load(ls[ts2])
+    selout <- is.na(matcor[,3])
+    nms1 <- colnames(matcor)
+    matcorapp1 <- matcor
+
+
+    nmsgenes <- nms2[nms2%in%nms1 & ! duplicated(nms2)]
+    
+    genesKEGG <- unlist(KEGGlist["path:hsa04080"])
+    selKEGGnmsgenes <- nmsgenes[nmsgenes%in%genesKEGG]
+     
+    aa <- matcorapp2[selKEGGnmsgenes,selKEGGnmsgenes]
+    bb <- matcorapp1[selKEGGnmsgenes,selKEGGnmsgenes]
+
+     
+    triag <- upper.tri(aa, diag=FALSE)
+    corrall <- unlist(aa[triag])
+    sa1 <- corrall
+
+    triag <- upper.tri(bb,diag=FALSE)
+    corrall <- unlist(bb[triag])
+    sa2 <- corrall
+
+    logsa1 <- log((1 + sa1) / (1-sa1)) / 2
+    logsa2 <- log((1 + sa2) / (1 - sa2)) / 2
+
+    rho <- cor.test(logsa1, logsa2)
+    rho <- rho$estimate
+
+    col<-"black"    
+    if(kk==ll)
+      col<-"darkred"    
+
+    plot(logsa2,logsa1,xlab="",ylab="",axes=FALSE,xlim=c(-1,2),ylim=c(-1,2),pch=".",col=col)
+    axis(side = 1, at=(-1):(2),labels=rep("",4) )
+    axis(side = 2, at=(-1):(2),labels=rep("",4) )
+ 
+    if(ll==1)
+    { 
+      axis(side = 2, at=(-1):(2))
+       title(ylab=paste(c("\n \n",cn1[kk]),sep=""),line=3,cex.lab=1)
+    }
+  
+    
+    if(kk==1)
+    {
+      title(main=paste(cn2[ll], "\n cor: ", round(rho,5), sep=""), cex.main=1, font.main = 1)
+
+    }else{
+      title(main=paste("\n cor: ", round(rho,5), sep="" ), cex.main=1, font.main = 1)
+    } 
+
+    if(kk==4) 
+       axis(side = 1, at=(-1):(2))
+
+ 
+   }
+
+}
+
+par(op)
+
+
+
+@
+
+
+
+\newpage
+
+\section{Tables}
+
+\input{./tables/means.tex}
+
+\input{./tables/variances.tex}
+
+\input{./tables/RankGTEX.tex}
+
+\newpage
+
+\input{./tables/KEGG.tex}
+
+\input{./tables/KEGGBench.tex}
+
+
+
+\end{document}
