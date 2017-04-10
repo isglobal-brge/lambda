@@ -1,0 +1,11 @@
+Package: lambda
+Type: Package
+Title: Computes the agreement measure between two experiments across numerous conditions 
+Version: 1.0
+Date: 2017-04-10
+Author: A Caceres
+Maintainer: Alejandro Caceres <alejandro.caceres@isglobal.org>
+Description: Implementation of the function lambda.agreement
+License: GPL (>= 2)
+URL: http://www.creal.cat/brge and http://www.creal.cat/jrgonzalez/software.htm
+LazyData: TRUE
