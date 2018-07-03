@@ -34,7 +34,8 @@ The measure assumes that the means are estimates of normally distributed variabl
 
 }
 \references{
-Caceres, A and Gonzalez JR, An overall measure of agreement across numerous conditions: Reproducibility of co-expression networks across tissues, bioRxiv, DOI: 
+Caceres, A and Gonzalez JR, A measure of agreement across numerous conditions: Assessing when changes in network
+connectivities across tissues are functional 
 }
 \author{
 A Caceres
@@ -55,7 +56,7 @@ net13 <- rnorm(tn)
 #network in experiment 2 across theree conditions 
 net21 <- net11 + rnorm(tn)
 net22 <- net12 + rnorm(tn)
-net23 <- net13 + rnorm(tn)
+net23 <- net13 + rnorm(tn)parallel
 
 #correlation matrix between experients across conditions
 cormat<-matrix(c(cor.test(net11,net21)$estimate,

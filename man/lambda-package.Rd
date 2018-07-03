@@ -14,7 +14,7 @@ Computes the agreement measure between two experiments across numerous condition
 Package: \tab lambda\cr
 Type: \tab Package\cr
 Version: \tab 1.0\cr
-Date: \tab 2017-04-10\cr
+Date: \tab 2018-03-07\cr
 License: \tab What license is it under?\cr
 }
 The package is an implementation of the function:
@@ -26,5 +26,6 @@ A Caceres
 Maintainer: A Caceres <alejandro.caceres@isglobal.org>
 }
 \references{
-Caceres, A and Gonzalez JR, An overall measure of agreement across numerous conditions: Reproducibility of co-expression networks across tissues, bioRxiv, DOI: 
+Caceres, A and Gonzalez JR, A measure of agreement across numerous conditions: Assessing when changes in network
+connectivities across tissues are functional 
 }
