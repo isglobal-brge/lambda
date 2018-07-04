@@ -41,17 +41,16 @@ logical. If TRUE it prints the sampling number during computation.
 
 }
 \details{
-The function computes the CI of lambda at alpha level from resampling with replacement the rows of E1 and E2. E1 and E2 correspond to the observations made by each rater across multiple conditions (columns). Each observation is assumed to be the corralation between two variables.
+The function computes the CI of lambda at alpha level from re-sampling with replacement the rows of E1 and E2. E1 and E2 correspond to the observations made by each rater across multiple conditions (columns). Each observation is assumed to be the correlation between two variables.
 
-For gene networks the variables may be the correation of expression levels between two genes across subjects. In this case, the first column in E1 contais, for intance, all non-redundant pair-wise correlations among the genes in the network for condition (tissue) 1 in experiment 1.   
+For gene networks the variables may be the correlation of expression levels between two genes across subjects. In this case, the first column in E1 contains, for instance, all non-redundant pair-wise correlations among the genes in the network for condition (tissue) 1 in experiment 1.   
 
 }
 \value{
  \item{CI}{confidence intervals}
 }
 \references{
-Caceres, A and Gonzalez JR, A measure of agreement across numerous conditions: Assessing when changes in network
-connectivities across tissues are functional  
+Caceres, A and Gonzalez JR, A measure of agreement across numerous conditions: Assessing when changes in network connectivities across tissues are functional  
 }
 \author{
 A Caceres
@@ -84,12 +83,11 @@ for(ind in 1:nlevels)
 simul <- mvrnorm(nonredundantcor, mu = rep(0,nlevels*2), Sigma = covmat, empirical = TRUE)
 ### 
   
-#45 gene correlations on 5 subjects
+#45 non-redundant gene correlation pairs from a 10 gene-network on 5 conditions, 3 of which are inter experiment reliable (3/5=0.6)
 
 E1 <- simul[,seq(1,ncol(simul),2)] #experiment 1
-E2 <- simul[,seq(1,ncol(simul),2)+1] #experiment 1
+E2 <- simul[,seq(1,ncol(simul),2)+1] #experiment 2
   
 CIlambda(E1=E1, E2=E2, alpha=0.05, nsam=100, mc.cores=2)
     
 }
-
