@@ -51,17 +51,24 @@ tn <- (k^2-k)/2
 E1 <-  matrix(rnorm(tn*3), ncol=3)  #expriment 1
 E2 <-  E1 + matrix(rnorm(tn*3), ncol=3)  #expriment 2
 
-E1df<-data.frame(E1)
+E1df <- data.frame(E1)
+names(E1df) <- LETTERS[1:3] 
 E2df<-data.frame(E2)
+names(E2df) <- letters[1:3] 
 
 #correlation matrix between experiments across conditions
-cormat<- sapply(E1df, function(i) sapply(E2df, function(j) cor.test(i,j)$estimate))
+cormat<- sapply(E2df, function(i) sapply(E1df, function(j) cor.test(i,j)$estimate))
 
 #Fisher's Z transformation
 zmat <- round(log((1 + cormat) / (1 - cormat)) / 2,2)
 sigmaz <-  matrix(1/sqrt(nrow(E1) - 3),ncol=3,nrow=3)
 
+#the diagonal terms are the maxima across rows and columns
+zmat
+
+#lambda is close to 1
 lambda <- lambda.agreement(zmat, sigmaz)
 lambda
 
+#A is reliably paired to a, B to b an C to C
 }
